@@ -18,16 +18,21 @@
 
 namespace pp
 {
-    /* Type Traits */
 
-    /// C++11 implementation of std::conjunction which is only available in C++17
-    template<class...> struct conjunction : std::true_type {};
-    template<class B1> struct conjunction<B1> : B1 {};
-    template<class B1, class... Bn>
-    struct conjunction<B1, Bn...>
-    : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};
+    /**
+     * \addtogroup type_traits Type traits 
+     * Type traits for C++11
+     * @{
+     */
     
-    /// A class for slicing index
+    template<class...> struct conjunction : std::true_type {};  /**< C++11 std::conjunction implementation. */
+    template<class B1> struct conjunction<B1> : B1 {};          /**< @copydoc conjunction */
+    template<class B1, class... Bn>
+    struct conjunction<B1, Bn...> 
+    : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};  /**< @copydoc conjunction */
+    /** @} */
+
+    /// Class for slicing index
     struct Slice
     {
         int start;
@@ -86,7 +91,7 @@ namespace pp
     };
 
 
-    /// BaseVector class for common methods
+    /// Class with common methods
     template< typename Dtype, typename Allocator = std::allocator<Dtype> >
     struct BaseVector : public std::vector<Dtype, Allocator>
     {
@@ -133,7 +138,14 @@ namespace pp
             return os << vec.toString();
         }
     };
+
+    /**
+     * @addtogroup inner Inner
+     * Implementation of Ndarray.
+     * @{
+     */
     
+    /// Class for multi-dimensional array
     // primary template
     template<typename Dtype, std::size_t dim>
     struct Inner : public BaseVector<Inner<Dtype, dim - 1>>
@@ -156,14 +168,18 @@ namespace pp
             this->push_back(Inner<T, dim - 1>(lowerDimInner));
         }
 
-        /* Indexing */
+        /**
+         * @name Indexing
+         *
+         * Indexing for Ndarray
+         */
         
         template<typename... Indices,
                  typename std::enable_if<(sizeof...(Indices) > 0), int>::type = 0,
                  typename std::enable_if<conjunction<std::is_integral<Indices>...>::value, int>::type = 0>
-        Inner<Dtype, dim-1>& operator()(int idx, Indices... indices)
+        auto operator()(int idx, Indices... indices) -> decltype(this->at(idx)(indices...)) 
         {
-            return this->at(idx)(indices...);
+            return this->at(idx).operator()(indices...);
         }
 
         template<typename... Indices,
@@ -171,7 +187,7 @@ namespace pp
                  typename std::enable_if<conjunction<std::is_integral<Indices>...>::value, int>::type = 0>
         const Inner<Dtype, dim-1>& operator()(int idx, Indices... indices) const
         {
-            return this->at(idx)(indices...);
+            return this->at(idx).operator()(indices...);
         }
 
         // For when there is only one index
@@ -185,7 +201,11 @@ namespace pp
             return this->at(idx);
         }
 
-        /* Slicing Index */
+        /**
+         * @name Slicing
+         * 
+         * Slicing index for Ndarray
+         */
 
         template<typename... Slices,
                  typename std::enable_if<conjunction<std::is_same<Slice, typename std::decay<Slices>::type>...>::value, int>::type = 0>
@@ -211,6 +231,7 @@ namespace pp
         }
     };
     
+    /// Class for 1-dimensional array
     // partial specialization where dimension is 1
     template<typename Dtype>
     struct Inner<Dtype, 1> : public BaseVector<Dtype>
@@ -241,19 +262,34 @@ namespace pp
             return tmp;
         }
     };
+    /** @} */
 
-   
-    
+
     /**
-     * An interface to create an Ndarray object
-     *
-     * > Recommended to use this interface to create an Ndarray object
+     * @addtogroup ndarray Ndarray
+     * Interface to create Ndarray.
+     * > Recommended to use this interface to create Ndarray.
      * 
      * @tparam Dtype Data type of the array
      * @tparam dim Dimension of the array
      * 
-     * ### Example
+     * ### Examples
+     * #### Initialize a Ndarray.
      * @include ndarray-initialize.cpp 
+     *
+     * ### Initialize a Ndarray in quick way. 
+     * @include ndarray-initialize-quick.cpp
+     * 
+     * @{
+     */
+    
+    /**
+     * An interface to create Ndarray.
+     *
+     * Recommended to use this interface to create Ndarray.
+     * 
+     * @tparam Dtype Data type of the array
+     * @tparam dim Dimension of the array
      * 
      */
     template<typename Dtype>
@@ -264,21 +300,20 @@ namespace pp
     };
 
     /**
-     * An alias to quickly create an Ndarray object
+     * An alias to quickly create Ndarray.
      *
-     * > Use this alias to create an Ndarray object quickly
+     * Use this alias to create Ndarray quickly.
      *
      * @tparam Dtype Data type of the array
      * @tparam dim Dimension of the array
-     *
-     * ### Example
-     * @include ndarray-initialize-quick.cpp
      */
     template<typename Dtype, std::size_t dim>
     struct Ndarray<Dtype[dim]> : public Inner<Dtype, dim>
     {
         using Inner<Dtype, dim>::Inner;
     };
+
+    /** @} */
 }
 
 #endif
