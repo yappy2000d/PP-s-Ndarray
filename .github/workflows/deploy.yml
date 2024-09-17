@@ -1,3 +1,4 @@
+# Build docs with doxygen and deploy on pages
 name: Deploy Doxygen site to Pages
 on:
   push:
@@ -9,6 +10,8 @@ permissions:
   pages: write
   id-token: write
 
+# Allow only one deployment at a time, skipping run queues between running and latest queues
+# However, do not cancel ongoing runs as we want to allow these production deployments to complete
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -25,9 +28,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # fetch-depth: 0
           submodules: true
-          
+      
+      # Download and install Doxygen
       - uses: ssciwr/doxygen-install@v1
         with:
           version: "1.12.0"
@@ -41,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs
+          path: ./docs/html
 
   deploy:
     environment:
