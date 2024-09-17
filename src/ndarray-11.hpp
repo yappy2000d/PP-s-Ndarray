@@ -279,7 +279,8 @@ namespace pp
         Inner<Dtype, dim> slice(const Range& r, const Ranges... ranges) const
         {
             Inner<Dtype, dim> tmp;
-            for(int i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
+            size_t end = (r.has_stop? r.stop: this->size());
+            for(size_t i=r.start; i<end; i+=r.step)
             {
                 tmp.push_back(this->at(i).slice(ranges...));
             }
@@ -290,7 +291,8 @@ namespace pp
         Inner<Dtype, dim> slice(const Range& r) const
         {
             Inner<Dtype, dim> tmp;
-            for(int i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
+            size_t end = (r.has_stop? r.stop: this->size());
+            for(size_t i=r.start; i<end; i+=r.step)
             {
                 tmp.push_back( Inner<Dtype, dim-1>(this->at(i)) );
             }
@@ -331,7 +333,8 @@ namespace pp
         Inner<Dtype, 1> slice(const Range& r) const
         {
             Inner<Dtype, 1> tmp;
-            for(int i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
+            size_t end = (r.has_stop? r.stop: this->size());
+            for(size_t i=r.start; i<end; i+=r.step)
             {
                 tmp.push_back(this->at(i));
             }
