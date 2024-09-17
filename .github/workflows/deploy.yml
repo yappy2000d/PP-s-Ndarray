@@ -22,15 +22,12 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Doxygen Action
-        # You may pin to the exact commit or the version.
-        # uses: mattnotmitt/doxygen-action@cbe72c8e402e8a3faa1f0b247ef90aa6c8e4ce74
-        uses: mattnotmitt/doxygen-action@1.9.8
+      - uses: ssciwr/doxygen-install@v1
         with:
-          # Path to Doxyfile
-          doxyfile-path: ./Doxyfile
-          # Working directory
-          working-directory: .
+          version: "1.12.0"
+
+      - name: Build HTML
+        run: doxygen
           
       - name: Setup Pages
         uses: actions/configure-pages@v4
