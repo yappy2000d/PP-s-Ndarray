@@ -1,5 +1,6 @@
 # Ndarray-11
 [![Static Badge](https://img.shields.io/badge/C%2B%2B-11-blue?style=flat-square&logo=cplusplus)](https://isocpp.org/std/the-standard)
+
 A simple yet powerful multi-dimensional array implementation in C++11, inspired by Python's NumPy. This library provides an intuitive interface for working with multi-dimensional arrays, supporting slicing, indexing, and initialization through initializer lists.
 
 ## Features
@@ -95,7 +96,7 @@ int main() {
 - Dimensions must remain the same after slicing.
 - Dimensions must be specified at compile time.
 
-## Cooming Later
+## Cooming not so soon
 
 - Support for negative indices.
 - Support for broadcasting and concatenation.
