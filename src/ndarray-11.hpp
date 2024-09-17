@@ -5,7 +5,6 @@
  * @version 11.3.1
  */
 
-
 #ifndef __NDARRAY_HPP__
 #define __NDARRAY_HPP__
 
@@ -17,8 +16,6 @@
 #include <regex>
 #include <array>
 
-#include <iostream>
-
 namespace pp
 {
 
@@ -28,11 +25,26 @@ namespace pp
      * @{
      */
     
+    // source: https://en.cppreference.com/w/cpp/types/conjunction#Possible_implementation
     template<class...> struct conjunction : std::true_type {};  /**< C++11 std::conjunction implementation. */
     template<class B1> struct conjunction<B1> : B1 {};          /**< @copydoc conjunction */
     template<class B1, class... Bn>
     struct conjunction<B1, Bn...> 
     : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};  /**< @copydoc conjunction */
+    
+    // source: https://stackoverflow.com/a/49672613 by @max66
+    template <std::size_t ...>
+    struct index_sequence
+    { };
+    template <std::size_t N, std::size_t ... Next>
+    struct indexSequenceHelper : public indexSequenceHelper<N-1U, N-1U, Next...>
+    { };
+    template <std::size_t ... Next>
+    struct indexSequenceHelper<0U, Next ... >
+    { using type = index_sequence<Next ... >; };
+    template <std::size_t N>
+    using make_index_sequence = typename indexSequenceHelper<N>::type;
+    
     /** @} */
 
     /// Class for slicing index
@@ -250,15 +262,16 @@ namespace pp
             return sliceHelper(slices, i);
         }
 
+        // Modified from https://stackoverflow.com/a/58634142 by @max66
         template<std::size_t N, std::size_t... Is>
-        Inner<Dtype, dim> sliceHelper(const std::array<Range, N>& slices, std::size_t n, std::index_sequence<Is...>) const
+        Inner<Dtype, dim> sliceHelper(const std::array<Range, N>& slices, std::size_t n, index_sequence<Is...>) const
         {
             return slice(slices[Is]...);
         }
 
         Inner<Dtype, dim> sliceHelper(const std::array<Range, dim>& slices, std::size_t n) const
         {
-            return sliceHelper(slices, n, std::make_index_sequence<dim>());
+            return sliceHelper(slices, n, make_index_sequence<dim>());
         }
 
         template<typename... Ranges,
