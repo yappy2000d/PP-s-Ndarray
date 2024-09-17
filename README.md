@@ -19,7 +19,7 @@ Then, include the header file in your code:
 ## Usage
 
 - For more examples, see the [examples](./examples/) directory.
-- Documentation is generated using Doxygen, and can be found [here](yappy2000d.github.io/PPs-Ndarray/).
+- Documentation is generated using Doxygen, and can be found [here](https://yappy2000d.github.io/PPs-Ndarray/).
 
 ### Basic Initialization
 
