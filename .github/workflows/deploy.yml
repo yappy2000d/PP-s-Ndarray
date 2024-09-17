@@ -1,4 +1,4 @@
-name: Deploy VitePress site to Pages
+name: Deploy Doxygen site to Pages
 on:
   push:
     branches: [main]
