@@ -1,24 +1,29 @@
 # Ndarray-11
+
 [![Static Badge](https://img.shields.io/badge/C%2B%2B-11-blue?style=flat-square&logo=cplusplus)](https://isocpp.org/std/the-standard)
+
 A simple yet powerful multi-dimensional array implementation in C++11, inspired by Python's NumPy. This library provides an intuitive interface for working with multi-dimensional arrays, supporting slicing, indexing, and initialization through initializer lists.
 
 ## Features
+
 - Multi-dimensional arrays: Supports arrays with arbitrary dimensions, enabling complex data structures.
 - Initializer list support: Easily initialize arrays with nested lists.
 - Indexing and slicing: Access and manipulate data through familiar Python-like syntax.
 - C++11 support: Fully compatible with C++11 and upper, using modern type traits and std::initializer_list.
 
 ## Installation
+
 To use Ndarray-11, simply download or clone the repository and include the header file in your project.
 
 Then, include the header file in your code:
 ```cpp
 #include "ndarray-11.hpp"
 ```
+
 ## Usage
 
 - For more examples, see the [examples](./examples/) directory.
-- Documentation is generated using Doxygen, and can be found [here](yappy2000d.github.io/PPs-Ndarray/).
+- Documentation is generated using Doxygen, and can be found [here](https://yappy2000d.github.io/PPs-Ndarray/).
 
 ### Basic Initialization
 
@@ -95,7 +100,7 @@ int main() {
 - Dimensions must remain the same after slicing.
 - Dimensions must be specified at compile time.
 
-## Cooming Later
+## Cooming not so soon
 
 - Support for negative indices.
 - Support for broadcasting and concatenation.
