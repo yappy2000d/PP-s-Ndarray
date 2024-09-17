@@ -95,14 +95,13 @@ int main() {
 
 ## Limitations
 
-- Negative indices are not supported yet.
+- Negative indices when slicing are not supported yet.
 - Broadcasting is not supported yet.
 - Dimensions must remain the same after slicing.
 - Dimensions must be specified at compile time.
 
 ## Cooming not so soon
 
-- Support for negative indices.
 - Support for broadcasting and concatenation.
 - Ability to slice into any dimension.
 
