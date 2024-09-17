@@ -2,7 +2,7 @@
  * @file
  * @author yappy2000d (yappy2000d (https://github.com/yappy2000d))
  * @brief A simple multi-dimensional array implementation in C++11
- * @version 11.3
+ * @version 11.3.1
  */
 
 
@@ -16,6 +16,8 @@
 #include <string>
 #include <regex>
 #include <array>
+
+#include <iostream>
 
 namespace pp
 {
@@ -55,7 +57,7 @@ namespace pp
         Range(const std::string &str) : Range(parseRange(str))
         {}
 
-        Range(int start, int stop, int step, bool has_stop) : start(start), stop(stop), step(step), has_stop(has_stop)
+        Range(int start, int stop, int step, bool has_stop=true) : start(start), stop(stop), step(step), has_stop(has_stop)
         {}
 
         static Range parseRange(const std::string &str)
@@ -229,7 +231,7 @@ namespace pp
          * Slicing index for Ndarray
          */
         
-        Inner<Dtype, dim> operator()(const std::string& input) const
+        Inner<Dtype, dim> operator[](const std::string& input) const
         {
             std::string str(input);
             str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
@@ -240,7 +242,7 @@ namespace pp
             std::regex re(",");
             std::sregex_token_iterator first{str.begin(), str.end(), re, -1}, last;
             for (; first != last; ++first) {
-                slices[i++] = Range(*first);
+                slices[i++] = Range::parseRange(*first);
             }
 
             return sliceHelper(slices, i);
@@ -302,6 +304,15 @@ namespace pp
         }
 
         /* Slicing Index */
+        Inner<Dtype, 1> operator[](const std::string& input) const
+        {
+            std::string str(input);
+            str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+
+            Range s = Range::parseRange(str);
+            return slice(s);
+        }
+
         Inner<Dtype, 1> slice(const Range& r) const
         {
             Inner<Dtype, 1> tmp;

@@ -52,10 +52,10 @@ array(0, 1, 2) = 777; // Equivalent to array[0][1][2] = 777;
 
 ### Slicing
 
-Perform slicing operations with a Python-like syntax using the `Slice` class:
+Perform slicing operations with a Python-like syntax using the `Range` class:
 
 ```cpp
-auto sliced_array = array(pp::Slice("0:1"), pp::Slice("::1"));
+auto sliced_array = array["0:1, ::1"];
 ```
 
 ### Printing Arrays
