@@ -1,4 +1,13 @@
-﻿#ifndef __NDARRAY_HPP__
+﻿/** 
+ * @file
+ * @brief Header file for multi-dimensional array implementation
+ * @version 11.1
+ * @author yappy2000d (https://github.com/yappy2000d)
+ * @note C++11 required
+ */
+
+
+#ifndef __NDARRAY_HPP__
 #define __NDARRAY_HPP__
 
 #include <vector>
