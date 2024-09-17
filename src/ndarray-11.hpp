@@ -2,7 +2,7 @@
  * @file
  * @author yappy2000d (yappy2000d (https://github.com/yappy2000d))
  * @brief A simple multi-dimensional array implementation in C++11
- * @version 11.2
+ * @version 11.3
  */
 
 
@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <string>
 #include <regex>
+#include <array>
 
 namespace pp
 {
@@ -33,7 +34,7 @@ namespace pp
     /** @} */
 
     /// Class for slicing index
-    struct Slice
+    struct Range
     {
         int start;
         int stop;
@@ -42,18 +43,6 @@ namespace pp
 
         /**
          * Slicing constructor
-         * 
-         * use it like python slice, exapmle:
-         *   - `Slice("1:2:3")` : start=1, stop=2, step=3
-         *   - `Slice("1:2")` : start=1, stop=2, step=1
-         *   - `Slice(":2")` : start=0, stop=2, step=1
-         *   - `Slice("1:")` : start=1, stop=0, step=1
-         *   - `Slice("::2")` : start=0, stop=0, step=2
-         * 
-         * > [!warning]
-         * > Example that are not allowed:
-         * > - `Slice("-1:2:3")` : can't use negative index
-         * > - `Slice("2")` : must use colon
          *
          * @param str
          *
@@ -61,9 +50,20 @@ namespace pp
          * @include ndarray-slicing.cpp
          *
          */
-        Slice(const std::string &str)
+        Range() : start(0), stop(0), step(1), has_stop(false) {}
+        
+        Range(const std::string &str) : Range(parseRange(str))
+        {}
+
+        Range(int start, int stop, int step, bool has_stop) : start(start), stop(stop), step(step), has_stop(has_stop)
+        {}
+
+        static Range parseRange(const std::string &str)
         {
             std::smatch sm;
+            int start, stop, step;
+            bool has_stop;
+
             if(std::regex_match(str, sm, std::regex("^\\s*(-?\\d+)?\\s*:\\s*(-?\\d+)?\\s*:\\s*(-?\\d+)?\\s*$")))
             {
                 // for slice format like "1:2:3"
@@ -87,6 +87,8 @@ namespace pp
                 // not support slice format like "1"
                 throw std::invalid_argument("Invalid slice format");
             }
+
+            return {start, stop, step, has_stop};
         }
     };
 
@@ -226,24 +228,52 @@ namespace pp
          * 
          * Slicing index for Ndarray
          */
+        
+        Inner<Dtype, dim> operator()(const std::string& input) const
+        {
+            std::string str(input);
+            str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
 
-        template<typename... Slices,
-                 typename std::enable_if<conjunction<std::is_same<Slice, typename std::decay<Slices>::type>...>::value, int>::type = 0>
-        Inner<Dtype, dim> operator()(const Slice& s, const Slices... slices) const
+            std::array<Range, dim> slices;
+            std::size_t i = 0;
+
+            std::regex re(",");
+            std::sregex_token_iterator first{str.begin(), str.end(), re, -1}, last;
+            for (; first != last; ++first) {
+                slices[i++] = Range(*first);
+            }
+
+            return sliceHelper(slices, i);
+        }
+
+        template<std::size_t N, std::size_t... Is>
+        Inner<Dtype, dim> sliceHelper(const std::array<Range, N>& slices, std::size_t n, std::index_sequence<Is...>) const
+        {
+            return slice(slices[Is]...);
+        }
+
+        Inner<Dtype, dim> sliceHelper(const std::array<Range, dim>& slices, std::size_t n) const
+        {
+            return sliceHelper(slices, n, std::make_index_sequence<dim>());
+        }
+
+        template<typename... Ranges,
+                 typename std::enable_if<conjunction<std::is_same<Range, typename std::decay<Ranges>::type>...>::value, int>::type = 0>
+        Inner<Dtype, dim> slice(const Range& r, const Ranges... ranges) const
         {
             Inner<Dtype, dim> tmp;
-            for(int i=s.start; i<(s.has_stop? s.stop: this->size()); i+=s.step)
+            for(int i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
             {
-                tmp.push_back(this->at(i)(slices...));
+                tmp.push_back(this->at(i).slice(ranges...));
             }
             return tmp;
         }
 
         // For when there are no more arguments
-        Inner<Dtype, dim> operator()(const Slice& s) const
+        Inner<Dtype, dim> slice(const Range& r) const
         {
             Inner<Dtype, dim> tmp;
-            for(int i=s.start; i<(s.has_stop? s.stop: this->size()); i+=s.step)
+            for(int i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
             {
                 tmp.push_back( Inner<Dtype, dim-1>(this->at(i)) );
             }
@@ -272,10 +302,10 @@ namespace pp
         }
 
         /* Slicing Index */
-        Inner<Dtype, 1> operator()(const Slice& s) const
+        Inner<Dtype, 1> slice(const Range& r) const
         {
             Inner<Dtype, 1> tmp;
-            for(int i=s.start; i<(s.has_stop? s.stop: this->size()); i+=s.step)
+            for(int i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
             {
                 tmp.push_back(this->at(i));
             }
