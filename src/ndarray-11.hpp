@@ -1,9 +1,8 @@
-﻿/** 
+﻿/**
  * @file
- * @brief Header file for multi-dimensional array implementation
- * @version 11.1
- * @author yappy2000d (https://github.com/yappy2000d)
- * @note C++11 required
+ * @author yappy2000d (yappy2000d (https://github.com/yappy2000d))
+ * @brief A simple multi-dimensional array implementation in C++11
+ * @version 11.2
  */
 
 
@@ -21,27 +20,48 @@ namespace pp
 {
     /* Type Traits */
 
-    // conjunction
+    /// C++11 implementation of std::conjunction which is only available in C++17
     template<class...> struct conjunction : std::true_type {};
     template<class B1> struct conjunction<B1> : B1 {};
     template<class B1, class... Bn>
     struct conjunction<B1, Bn...>
     : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};
     
-    /* Slice */
-
+    /// A class for slicing index
     struct Slice
     {
         int start;
         int stop;
         int step;
-        bool has_stop; // 是否到底
+        bool has_stop;  ///< Flag to check if stop is given
 
+        /**
+         * Slicing constructor
+         * 
+         * use it like python slice, exapmle:
+         *   - `Slice("1:2:3")` : start=1, stop=2, step=3
+         *   - `Slice("1:2")` : start=1, stop=2, step=1
+         *   - `Slice(":2")` : start=0, stop=2, step=1
+         *   - `Slice("1:")` : start=1, stop=0, step=1
+         *   - `Slice("::2")` : start=0, stop=0, step=2
+         * 
+         * > [!warning]
+         * > Example that are not allowed:
+         * > - `Slice("-1:2:3")` : can't use negative index
+         * > - `Slice("2")` : must use colon
+         *
+         * @param str
+         *
+         * ### Example
+         * @include ndarray-slicing.cpp
+         *
+         */
         Slice(const std::string &str)
         {
             std::smatch sm;
             if(std::regex_match(str, sm, std::regex("^\\s*(-?\\d+)?\\s*:\\s*(-?\\d+)?\\s*:\\s*(-?\\d+)?\\s*$")))
             {
+                // for slice format like "1:2:3"
                 start = (sm[1] == "")? 0: std::stoi( sm[1] );
                 stop   = (sm[2] == "")? 0: std::stoi( sm[2] );
                 step  = (sm[3] == "")? 1: std::stoi( sm[3] );
@@ -50,7 +70,7 @@ namespace pp
             }
             else if(std::regex_match(str, sm, std::regex("^\\s*(-?\\d+)?\\s*:\\s*(-?\\d+)?\\s*$")))
             {
-                // 兩個的
+                // for slice format like "1:2"
                 start = (sm[1] == "")? 0: std::stoi( sm[1] );
                 stop   = (sm[2] == "")? 0: std::stoi( sm[2] );
                 step  = 1;
@@ -59,14 +79,14 @@ namespace pp
             }
             else
             {
+                // not support slice format like "1"
                 throw std::invalid_argument("Invalid slice format");
             }
         }
     };
 
 
-    /* Common Base: std::vector */
-
+    /// BaseVector class for common methods
     template< typename Dtype, typename Allocator = std::allocator<Dtype> >
     struct BaseVector : public std::vector<Dtype, Allocator>
     {
@@ -114,22 +134,22 @@ namespace pp
         }
     };
     
-
     // primary template
     template<typename Dtype, std::size_t dim>
     struct Inner : public BaseVector<Inner<Dtype, dim - 1>>
     {
         static_assert(dim >= 1, "Dimension must be greater than zero!");
 
+        // Construct in Recursive
         template<typename... Args>
         Inner(std::size_t n = 0, Args... args) : BaseVector<Inner<Dtype, dim - 1>>(n, Inner<Dtype, dim - 1>(args...))
         {}
 
-        // Constructor to handle initializer list for nested lists
+        /// Constructor to handle initializer list for nested lists
         Inner(std::initializer_list<Inner<Dtype, dim - 1>> initList) : BaseVector<Inner<Dtype, dim - 1>>(initList)
         {}
 
-        // Copy constructor from lower dimension
+        /// Copy from lower dimension
         template<typename T, std::size_t M, typename = typename std::enable_if<(M < dim)>::type>
         Inner(const Inner<T, M>& lowerDimInner)
         {
@@ -137,7 +157,7 @@ namespace pp
         }
 
         /* Indexing */
-
+        
         template<typename... Indices,
                  typename std::enable_if<(sizeof...(Indices) > 0), int>::type = 0,
                  typename std::enable_if<conjunction<std::is_integral<Indices>...>::value, int>::type = 0>
@@ -222,8 +242,20 @@ namespace pp
         }
     };
 
-    /* Wrapper */
+   
     
+    /**
+     * An interface to create an Ndarray object
+     *
+     * > Recommended to use this interface to create an Ndarray object
+     * 
+     * @tparam Dtype Data type of the array
+     * @tparam dim Dimension of the array
+     * 
+     * ### Example
+     * @include ndarray-initialize.cpp 
+     * 
+     */
     template<typename Dtype>
     struct Ndarray
     {
@@ -231,7 +263,17 @@ namespace pp
         using dim = Inner<Dtype, dimention>;
     };
 
-    // Specialization for multi-dimensional arrays
+    /**
+     * An alias to quickly create an Ndarray object
+     *
+     * > Use this alias to create an Ndarray object quickly
+     *
+     * @tparam Dtype Data type of the array
+     * @tparam dim Dimension of the array
+     *
+     * ### Example
+     * @include ndarray-initialize-quick.cpp
+     */
     template<typename Dtype, std::size_t dim>
     struct Ndarray<Dtype[dim]> : public Inner<Dtype, dim>
     {
