@@ -196,6 +196,7 @@ namespace pp
          * @name Indexing
          *
          * Indexing for Ndarray
+         * Unlike Slicing, Indexing returns a reference to the element.
          */
         
         template<typename... Indices,
@@ -229,6 +230,7 @@ namespace pp
          * @name Slicing
          * 
          * Slicing index for Ndarray
+         * Unlike Indexing, Slicing returns a new Ndarray.
          */
         
         Inner<Dtype, dim> operator[](const std::string& input) const
