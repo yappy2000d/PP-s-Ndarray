@@ -1,4 +1,4 @@
-#include "ndarray.hpp"
+#include "ndarray-11.hpp"
 
 int main() {
     pp::Ndarray<int[3]> array = {
