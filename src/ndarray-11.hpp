@@ -133,6 +133,26 @@ namespace pp
             return ss.str();
         }
 
+        Dtype& at(int idx)
+        {
+            if (idx < 0 ) {
+                idx += this->size();
+                if (idx < 0) throw std::out_of_range("Index out of range");
+            }
+
+            return std::vector<Dtype>::at(idx);
+        }
+
+        const Dtype& at(int idx) const 
+        {
+            if (idx < 0 ) {
+                idx += this->size();
+                if (idx < 0) throw std::out_of_range("Index out of range");
+            }
+
+            return std::vector<Dtype>::at(idx);
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const BaseVector<Dtype, Allocator>& vec)
         {
             return os << vec.toString();
