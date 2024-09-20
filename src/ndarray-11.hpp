@@ -2,7 +2,7 @@
  * @file
  * @author yappy2000d (yappy2000d (https://github.com/yappy2000d))
  * @brief A simple multi-dimensional array implementation in C++11
- * @version 11.3.3
+ * @version 11.3.4
  */
 
 #ifndef __NDARRAY_HPP__
