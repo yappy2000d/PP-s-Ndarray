@@ -2,7 +2,7 @@
  * @file
  * @author yappy2000d (yappy2000d (https://github.com/yappy2000d))
  * @brief A simple multi-dimensional array implementation in C++11
- * @version 11.3.2
+ * @version 11.3.3
  */
 
 #ifndef __NDARRAY_HPP__
@@ -119,7 +119,6 @@ namespace pp
         auto toString(int indentLevel = 0) const -> 
         typename std::enable_if<std::integral_constant<bool, std::is_arithmetic<U>::value || std::is_same<U, std::string>::value>::value, std::string>::type
         {
-            (void)indentLevel;
             if (this->empty()) return "[ ]";
             std::stringstream ss;
             for (size_t i = 0; i < this->size(); ++i) {
@@ -142,7 +141,7 @@ namespace pp
                 // Recursive call for nested vectors
                 ss << (i==0? "[\n": "")
                    << indent
-                   << "  " << this->at(i).toString(indentLevel + 1)
+                   << "  " << (*this)[i].toString(indentLevel + 1)
                    << (i != this->size()-1 ? "," : "")
                    << "\n";
             }
@@ -174,6 +173,8 @@ namespace pp
         {
             return os << vec.toString();
         }
+
+
     };
 
     /**
@@ -257,45 +258,46 @@ namespace pp
             std::regex re(",");
             std::sregex_token_iterator first{str.begin(), str.end(), re, -1}, last;
             for (; first != last; ++first) {
+                if(i >= dim) throw std::invalid_argument("Too many slices");
                 slices[i++] = Range::parseRange(*first);
             }
 
-            return sliceHelper(slices, i, make_index_sequence<dim>());
+            return sliceHelper(slices, i);
         }
 
-        template<std::size_t... Is>
-        Inner<Dtype, dim> sliceHelper(const std::array<Range, dim>& slices, std::size_t n, index_sequence<Is...>) const
+        // Modified from https://stackoverflow.com/a/58634142 by @max66
+        Inner<Dtype, dim> sliceHelper(const std::array<Range, dim>& slices, std::size_t n) const
         {
-            (void)n;
-            return sliceImpl(slices[Is]...);
+            return sliceHelper(slices, n, make_index_sequence<dim>());
         }
 
-        template<typename... Ranges>
-        typename std::enable_if<sizeof...(Ranges) == dim, Inner<Dtype, dim>>::type
-        sliceImpl(const Ranges&... ranges) const
+        template<std::size_t N, std::size_t... Is>
+        Inner<Dtype, dim> sliceHelper(const std::array<Range, N>& slices, std::size_t n, index_sequence<Is...>) const
         {
-            return sliceRecursive(ranges...);
+            return slice(slices[Is]...);
         }
 
-        template<typename... Ranges>
-        Inner<Dtype, dim>
-        sliceRecursive(const Range& r, const Ranges&... ranges) const
+        template<typename... Ranges,
+                 typename std::enable_if<conjunction<std::is_same<Range, typename std::decay<Ranges>::type>...>::value, int>::type = 0>
+        Inner<Dtype, dim> slice(const Range& r, const Ranges... ranges) const
         {
             Inner<Dtype, dim> tmp;
-            for(size_t i=r.start; i<(r.has_stop? r.stop: this->size()); i+=r.step)
+            size_t end = (r.has_stop? r.stop: this->size());
+            for(size_t i=r.start; i<end; i+=r.step)
             {
-                tmp.push_back(this->at(i).sliceRecursive(ranges...));
+                tmp.push_back(this->at(i).slice(ranges...));
             }
             return tmp;
         }
 
-        Inner<Dtype, dim> sliceRecursive(const Range& r) const
+        // For when there are no more arguments
+        Inner<Dtype, dim> slice(const Range& r) const
         {
             Inner<Dtype, dim> tmp;
-            std::size_t end = (r.has_stop? r.stop: this->size());
+            size_t end = (r.has_stop? r.stop: this->size());
             for(size_t i=r.start; i<end; i+=r.step)
             {
-                tmp.push_back(Inner<Dtype, dim-1>(this->at(i)));
+                tmp.push_back( Inner<Dtype, dim-1>(this->at(i)) );
             }
             return tmp;
         }
@@ -308,33 +310,33 @@ namespace pp
     {
         Inner(std::size_t n = 0, const Dtype& val = Dtype{}) : BaseVector<Dtype>(n, val)
         {}
-    
+
         Inner(std::initializer_list<Dtype> initList) : BaseVector<Dtype>(initList)
         {}
-    
+
         /* Indexing */
         Dtype& operator()(int idx) {
             return this->at(idx);
         }
-    
+
         const Dtype& operator()(int idx) const {
             return this->at(idx);
         }
-    
+
         /* Slicing Index */
         Inner<Dtype, 1> operator[](const std::string& input) const
         {
             std::string str(input);
             str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
-    
+
             Range s = Range::parseRange(str);
-            return sliceRecursive(s);
+            return slice(s);
         }
-    
-        Inner<Dtype, 1> sliceRecursive(const Range& r) const
+
+        Inner<Dtype, 1> slice(const Range& r) const
         {
             Inner<Dtype, 1> tmp;
-            std::size_t end = (r.has_stop? r.stop: this->size());
+            size_t end = (r.has_stop? r.stop: this->size());
             for(size_t i=r.start; i<end; i+=r.step)
             {
                 tmp.push_back(this->at(i));
