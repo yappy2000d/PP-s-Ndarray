@@ -261,39 +261,26 @@ namespace pp
                 slices[i++] = Range::parseRange(*first);
             }
 
-            return sliceHelper(slices, i, make_index_sequence<dim>());
+            return slice(slices, 0, i);
         }
 
-        // Modified from https://stackoverflow.com/a/58634142 by @max66
-        template<std::size_t N, std::size_t... Is>
-        Inner<Dtype, dim> sliceHelper(const std::array<Range, N>& slices, std::size_t n, index_sequence<Is...>) const
-        {
-            return slice(slices[Is]...);
-        }
 
-        template<typename... Ranges,
-                 typename std::enable_if<conjunction<std::is_same<Range, typename std::decay<Ranges>::type>...>::value, int>::type = 0>
-        Inner<Dtype, dim> slice(const Range& r, const Ranges... ranges) const
+        template<std::size_t length>
+        Inner<Dtype, dim> slice(const std::array<Range, length> slices, int start, const int& end) const
         {
-            Inner<Dtype, dim> tmp;
-            size_t end = (r.has_stop? r.stop: this->size());
-            for(size_t i=r.start; i<end; i+=r.step)
+            if(start == end) return *this;
+
+            Inner<Dtype, dim> result;
+
+            Range r = slices[start];
+            std::size_t stop = r.has_stop? r.stop: this->size();
+
+            for(int i = r.start; i < stop; i += r.step)
             {
-                tmp.push_back(this->at(i).slice(ranges...));
+                result.push_back(this->at(i).slice(slices, start + 1, end));
             }
-            return tmp;
-        }
 
-        // For when there are no more arguments
-        Inner<Dtype, dim> slice(const Range& r) const
-        {
-            Inner<Dtype, dim> tmp;
-            size_t end = (r.has_stop? r.stop: this->size());
-            for(size_t i=r.start; i<end; i+=r.step)
-            {
-                tmp.push_back( Inner<Dtype, dim-1>(this->at(i)) );
-            }
-            return tmp;
+            return result;
         }
     };
     
@@ -317,26 +304,36 @@ namespace pp
             return this->at(idx);
         }
 
-        /* Slicing Index */
+        /* Slicing */
         Inner<Dtype, 1> operator[](const std::string& input) const
         {
             std::string str(input);
-            str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+            std::array<Range, 1> slices;
 
-            Range s = Range::parseRange(str);
-            return slice(s);
+            Range range = Range::parseRange(str);
+            slices[0] = range;
+
+            return slice(slices);
         }
 
-        Inner<Dtype, 1> slice(const Range& r) const
+        template<std::size_t length>
+        Inner<Dtype, 1> slice(const std::array<Range, length> slices, int start, const int& end) const
         {
-            Inner<Dtype, 1> tmp;
-            size_t end = (r.has_stop? r.stop: this->size());
-            for(size_t i=r.start; i<end; i+=r.step)
+            if(start == end) return *this;
+
+            Inner<Dtype, 1> result;
+
+            Range s = slices[start];
+            std::size_t stop = s.has_stop? s.stop: this->size();
+
+            for(int i = s.start; i < stop; i += s.step)
             {
-                tmp.push_back(this->at(i));
+                result.push_back(this->at(i));
             }
-            return tmp;
+
+            return result;
         }
+
     };
     /** @} */
 
