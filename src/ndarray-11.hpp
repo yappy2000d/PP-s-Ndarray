@@ -250,27 +250,21 @@ namespace pp
         Inner<Dtype, dim> operator[](const std::string& input) const
         {
             std::string str(input);
-            str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
 
             std::array<Range, dim> slices;
             std::size_t i = 0;
 
-            std::regex re(",");
+            std::regex re("\\s*,\\s*");
             std::sregex_token_iterator first{str.begin(), str.end(), re, -1}, last;
             for (; first != last; ++first) {
                 if(i >= dim) throw std::invalid_argument("Too many slices");
                 slices[i++] = Range::parseRange(*first);
             }
 
-            return sliceHelper(slices, i);
+            return sliceHelper(slices, i, make_index_sequence<dim>());
         }
 
         // Modified from https://stackoverflow.com/a/58634142 by @max66
-        Inner<Dtype, dim> sliceHelper(const std::array<Range, dim>& slices, std::size_t n) const
-        {
-            return sliceHelper(slices, n, make_index_sequence<dim>());
-        }
-
         template<std::size_t N, std::size_t... Is>
         Inner<Dtype, dim> sliceHelper(const std::array<Range, N>& slices, std::size_t n, index_sequence<Is...>) const
         {
