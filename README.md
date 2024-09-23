@@ -95,9 +95,9 @@ int main() {
 
 ## Limitations
 
-- Negative indices when slicing are not supported yet.
+- Negative indices when slicing are not supported yet. https://github.com/yappy2000d/PPs-Ndarray/issues/1
 - Broadcasting is not supported yet.
-- Dimensions must remain the same after slicing.
+- Dimensions must remain the same after slicing. https://github.com/yappy2000d/PPs-Ndarray/issues/2
 - Dimensions must be specified at compile time.
 
 ## Cooming not so soon
