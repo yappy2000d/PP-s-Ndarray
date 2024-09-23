@@ -66,7 +66,7 @@ Print the array using the `<<` operator:
 std::cout << array << std::endl;
 ```
 
-### Full Example
+### Example
 
 ```cpp
 #include "ndarray-11.hpp"
