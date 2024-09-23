@@ -102,8 +102,7 @@ int main() {
 
 ## Cooming not so soon
 
-- Support for broadcasting and concatenation.
-- Ability to slice into any dimension.
+Check out the [Milestones](https://github.com/yappy2000d/PPs-Ndarray/milestones)
 
 ## Contributions
 
