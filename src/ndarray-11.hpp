@@ -24,24 +24,29 @@ namespace pp
      * Type traits for C++11
      * @{
      */
-    
-    // source: https://en.cppreference.com/w/cpp/types/conjunction#Possible_implementation
-    template<class...> struct conjunction : std::true_type {};  /**< C++11 std::conjunction implementation. */
+
+    /**
+     * C++11 std::conjunction implementation.
+     *
+     * source: https://en.cppreference.com/w/cpp/types/conjunction#Possible_implementation
+     */
+    template<class...> struct conjunction : std::true_type {};  /**<  */
     template<class B1> struct conjunction<B1> : B1 {};          /**< @copydoc conjunction */
     template<class B1, class... Bn>
     struct conjunction<B1, Bn...> 
     : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};  /**< @copydoc conjunction */
     
-    // source: https://stackoverflow.com/a/49672613 by @max66
-    template <std::size_t ...>
-    struct index_sequence
-    { };
+    /**
+     * C++11 std::index_sequence implementation.
+     *
+     * source: https://stackoverflow.com/a/49672613 by @max66
+     */
+    template <std::size_t ...> struct index_sequence {};
     template <std::size_t N, std::size_t ... Next>
-    struct indexSequenceHelper : public indexSequenceHelper<N-1U, N-1U, Next...>
-    { };
+    struct indexSequenceHelper : public indexSequenceHelper<N-1U, N-1U, Next...> {};  /**< @copydoc index_sequence */
     template <std::size_t ... Next>
     struct indexSequenceHelper<0U, Next ... >
-    { using type = index_sequence<Next ... >; };
+    { using type = index_sequence<Next ... >; };                                      /**< @copydoc index_sequence */
     template <std::size_t N>
     using make_index_sequence = typename indexSequenceHelper<N>::type;
     
