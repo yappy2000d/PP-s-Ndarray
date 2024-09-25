@@ -114,4 +114,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) fi
 
 ## Acknowledgements
 
-- @rexwolflan for technical guidance and code review.
+- [@rexwolflan](https://github.com/LeiwolfLanze) for technical guidance and code review.
